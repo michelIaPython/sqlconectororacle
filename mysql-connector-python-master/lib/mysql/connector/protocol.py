@@ -463,14 +463,19 @@ class MySQLProtocol(object):
         mcs = 0
         if length > 8:
             mcs = struct.unpack('<I', data[8:])[0]
-        days = struct.unpack('<I', data[1:5])[0]
+        if length == 0:
+            data = packet
+            tmp = datetime.timedelta(0)
+        else:
+            days = struct.unpack('<I', data[1:6])[0]
+            tmp = datetime.timedelta(days=days,
+                            seconds=data[7],
+                            microseconds=mcs,
+                            minutes=data[6],
+                            hours=data[5])
+
         if data[0] == 1:
             days *= -1
-        tmp = datetime.timedelta(days=days,
-                                 seconds=data[7],
-                                 microseconds=mcs,
-                                 minutes=data[6],
-                                 hours=data[5])
 
         return (packet[length + 1:], tmp)
 
